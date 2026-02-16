@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>QuickPDFSum – PDF 자동 요약 서비스</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="QuickPDFSum는 AI 기반 PDF 자동 요약 서비스입니다. 논문, 보고서, 리포트를 몇 초 안에 요약해 보세요. 업로드된 파일은 처리 후 즉시 삭제됩니다." />
+  <meta name="description" content="QuickPDFSum — PDF를 AI로 빠르게 요약합니다. 파일은 즉시 삭제되며 개인정보는 저장하지 않습니다.">
+  <meta property="og:title" content="QuickPDFSum — PDF 자동 요약">
+  <meta property="og:description" content="PDF 문서를 AI로 3초만에 요약. 업로드 후 즉시 삭제. 한국어 OCR 지원.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://quickpdfsum.com">
+  <meta property="og:image" content="https://quickpdfsum.com/logo.png">
+
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --card-bg: #111827;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.12);
+      --border: #1f2937;
+      --text-main: #e5e7eb;
+      --text-sub: #9ca3af;
+      --danger: #f97373;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .shell {
+      width: 100%;
+      max-width: 960px;
+    }
+    .card {
+      background: linear-gradient(145deg, #020617 0, #020617 55%, #0b1120 100%);
+      border-radius: 20px;
+      padding: 24px 24px 20px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #facc15 0, #f97316 40%, #3b82f6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: #0b1120;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+    .title-main {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .title-sub {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-sub);
+      background: radial-gradient(circle at top, rgba(148, 163, 184, 0.12), transparent);
+      white-space: nowrap;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 800px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+    .section {
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+      background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), rgba(15, 23, 42, 0.96));
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+    .section.secondary {
+      background: radial-gradient(circle at top right, rgba(8, 47, 73, 0.3), rgba(15, 23, 42, 0.96));
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #d1d5db;
+    }
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .file-input-wrap {
+      position: relative;
+    }
+    input[type="file"] {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background-color: rgba(15, 23, 42, 0.9);
+      color: var(--text-sub);
+      font-size: 13px;
+    }
+    input[type="file"]::file-selector-button {
+      padding: 5px 10px;
+      margin-right: 10px;
+      border-radius: 999px;
+      border: 0;
+      background-color: var(--accent);
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    select {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background-color: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      font-size: 13px;
+    }
+    button[type="submit"] {
+      width: 100%;
+      margin-top: 6px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 0;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow:
+        0 10px 25px rgba(37, 99, 235, 0.4),
+        0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+    button[type="submit"]:hover {
+      filter: brightness(1.05);
+    }
+    button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background-color: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      color: var(--text-sub);
+    }
+    .badge.highlight {
+      border-color: rgba(96, 165, 250, 0.9);
+      background-color: var(--accent-soft);
+      color: #bfdbfe;
+    }
+    .error {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.8);
+      border-radius: 10px;
+      padding: 8px 10px;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .result-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .result-meta {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+    .result-box {
+      border-radius: 10px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background-color: rgba(15, 23, 42, 0.9);
+      padding: 10px;
+      font-size: 13px;
+      max-height: 320px;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .copy-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background-color: rgba(15, 23, 42, 0.9);
+      padding: 5px 10px;
+      font-size: 11px;
+      color: var(--text-sub);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .copy-btn:hover {
+      border-color: rgba(148, 163, 184, 0.9);
+      color: #e5e7eb;
+    }
+    footer {
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--text-sub);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+    }
+    .foot-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background-color: rgba(148, 163, 184, 0.8);
+      display: inline-block;
+      margin: 0 6px;
+    }
+.lang-switch {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-left: auto;
+}
+
+.lang-switch a {
+  color: var(--text-sub);
+  text-decoration: none;
+}
+
+.lang-switch a:hover {
+  color: var(--text-main);
+}
+
+    .drop-zone {
+      border-radius: 10px;
+      border: 1px dashed rgba(75, 85, 99, 0.9);
+      background-color: rgba(15, 23, 42, 0.5);
+      padding: 14px 12px;
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+      margin-bottom: 8px;
+    }
+    .drop-zone.hover {
+      background-color: rgba(37, 99, 235, 0.12);
+      border-color: rgba(96, 165, 250, 0.9);
+      color: #e5e7eb;
+    }
+    .drop-zone strong {
+      color: #e5e7eb;
+    }
+    .drop-zone small {
+      display: block;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+    .file-input-wrap {
+      margin-top: 6px;
+    }
+
+
+  </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DV1F597M91"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-DV1F597M91');
+</script>
+<body>
+  <div class="shell">
+    <div class="card">
+      <header>
+        <div class="brand">
+          <div class="logo">Q</div>
+          <div>
+            <div class="title-main">QuickPDFSum</div>
+            <div class="title-sub">AI 기반 PDF 자동 요약 서비스</div>
+          </div>
+        </div>
+        <div class="pill">BETA · KOREAN FOCUSED</div>
+<div class="lang-switch">
+  <a href="/?lang=ko">한국어</a> | 
+  <a href="/?lang=en">English</a>
+</div>
+
+      </header>
+
+      <main>
+        <!-- 왼쪽: 업로드 / 옵션 -->
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">PDF 업로드</div>
+            <div style="font-size:11px;color:var(--text-sub);">논문·보고서·리포트 모두 가능</div>
+          </div>
+          <div class="section-desc">
+            PDF 파일을 업로드하면 AI가 내용을 분석해 한국어로 요약해 줍니다. 파일은 요약 후 일정 시간 내 자동 삭제됩니다.
+          </div>
+
+          <form method="post" enctype="multipart/form-data" id="pdf-form">
+            <div class="input-row">
+              <div>
+                <label for="pdf">PDF 파일</label>
+
+                <!-- Drag & Drop 영역 -->
+                <div id="drop-zone" class="drop-zone">
+                  <strong>여기로 PDF 파일을 드래그해서 놓으세요</strong>
+                  <small>또는 아래 버튼을 눌러 파일을 선택하세요.</small>
+                </div>
+
+                <!-- 기존 파일 선택 인풋 -->
+                <div class="file-input-wrap">
+                  <input type="file" id="pdf" name="pdf" accept="application/pdf" required />
+                </div>
+              </div>
+
+
+              <div>
+                <label for="level">요약 길이</label>
+                <select id="level" name="level">
+                  <option value="short">짧게 (3~4문장)</option>
+                  <option value="medium" selected>보통 (3~5개 핵심 포인트)</option>
+                  <option value="long">길게 (A4 1페이지 정도)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit">
+              PDF 요약하기
+              <span style="font-size:11px;opacity:0.9;">(수 초 소요)</span>
+            </button>
+
+            {% if error %}
+            <div class="error">
+              {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="badge-row">
+              <div class="badge highlight">서버에 영구 저장하지 않습니다</div>
+              <div class="badge">업로드 최대 20MB</div>
+              <div class="badge">한국어 요약 최적화</div>
+            </div>
+          </form>
+        </section>
+
+        <!-- 오른쪽: 결과 / 안내 -->
+        <section class="section secondary">
+          <div class="section-header">
+            <div class="section-title">요약 결과</div>
+            {% if summary %}
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="copy-btn" id="download-btn">
+                다운로드
+              </button>
+              <button type="button" class="copy-btn" id="copy-btn">
+                복사
+              </button>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if summary %}
+          <div class="result-meta">아래 내용을 자유롭게 편집·복사해서 사용하세요.</div>
+          <div class="result-box" id="summary-box">{{ summary }}</div>
+          {% else %}
+          <div class="section-desc" style="margin-bottom:10px;">
+            왼쪽에서 PDF를 업로드하면 이 영역에 요약 결과가 표시됩니다.
+          </div>
+          <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text-sub);line-height:1.6;">
+            <li>긴 문서는 먼저 핵심 구조를 파악한 뒤 요약합니다.</li>
+            <li>표·수식 등은 텍스트 구조 위주로 정리됩니다.</li>
+            <li>중요 계약서·민감 정보는 반드시 직접 검토 후 사용하세요.</li>
+          </ul>
+          {% endif %}
+        </section>
+      </main>
+
+<footer>
+  <div>
+    QuickPDFSum &middot; PDF 자동 요약 도구
+  </div>
+  <div class="foot-links">
+    <span>파일은 처리 후 일정 시간 내 자동 삭제되며, 분석 목적 외로 사용하지 않습니다.</span>
+    <span class="dot"></span>
+    <a href="/terms" style="color:inherit;text-decoration:none;font-size:11px;">이용약관</a>
+    <span class="dot"></span>
+    <a href="/privacy" style="color:inherit;text-decoration:none;font-size:11px;">개인정보 처리방침</a>
+    <span class="dot"></span>
+    <a href="/terms-en" style="color:inherit;text-decoration:none;font-size:11px;">Terms (EN)</a>
+    <span class="dot"></span>
+    <a href="/privacy-en" style="color:inherit;text-decoration:none;font-size:11px;">Privacy (EN)</a>
+  </div>
+</footer>
+
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("pdf-form");
+    const submitBtn = form.querySelector('button[type="submit"]');
+    form.addEventListener("submit", () => {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "요약 중...";
+    });
+
+    const copyBtn = document.getElementById("copy-btn");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        const box = document.getElementById("summary-box");
+        if (!box) return;
+        const text = box.innerText || box.textContent || "";
+        try {
+          await navigator.clipboard.writeText(text);
+          const prev = copyBtn.textContent;
+          copyBtn.textContent = "복사 완료";
+          setTimeout(() => (copyBtn.textContent = prev), 1500);
+        } catch (e) {
+          alert("복사에 실패했습니다. 수동으로 복사해주세요.");
+        }
+      });
+    }
+
+    
+    // ▼ 여기부터 추가: 요약 결과 다운로드 버튼
+    const downloadBtn = document.getElementById("download-btn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => {
+        const box = document.getElementById("summary-box");
+        if (!box) return;
+        const text = box.innerText || box.textContent || "";
+
+        if (!text.trim()) {
+          alert("다운로드할 요약 내용이 없습니다.");
+          return;
+        }
+
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "quickpdfsum-summary.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    
+    // ▼ 여기부터 Drag & Drop
+    (function setupDragAndDrop() {
+      const dropZone = document.getElementById("drop-zone");
+      const fileInput = document.getElementById("pdf");
+      if (!dropZone || !fileInput) return;
+
+      const preventDefaults = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(
+          eventName,
+          () => dropZone.classList.add("hover"),
+          false
+        );
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(
+          eventName,
+          () => dropZone.classList.remove("hover"),
+          false
+        );
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        if (!dt || !dt.files || dt.files.length === 0) return;
+
+        const file = dt.files[0];
+        // PDF만 허용
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+          alert("PDF 파일만 업로드할 수 있습니다.");
+          return;
+        }
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+      });
+
+      // 클릭 시 파일 선택창 열리도록
+      dropZone.addEventListener("click", () => {
+        fileInput.click();
+      });
+    })();
+
+    
+  </script>
+</body>
+</html>

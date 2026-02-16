@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QuickPDFSum – AI PDF Summarizer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="QuickPDFSum is an AI-powered PDF summarizer. Instantly summarize research papers, reports, and long documents. Uploaded files are deleted immediately after processing." />
+  <meta property="og:title" content="QuickPDFSum — AI PDF Summarizer">
+  <meta property="og:description" content="Summarize any PDF using AI in seconds. Files are deleted instantly. Supports OCR.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://quickpdfsum.com">
+  <meta property="og:image" content="https://quickpdfsum.com/logo.png">
+
+  <style>
+    /* --- 동일 CSS (원본 그대로 유지) --- */
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --card-bg: #111827;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.12);
+      --border: #1f2937;
+      --text-main: #e5e7eb;
+      --text-sub: #9ca3af;
+      --danger: #f97373;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .shell { width: 100%; max-width: 960px; }
+    .card {
+      background: linear-gradient(145deg, #020617 0, #020617 55%, #0b1120 100%);
+      border-radius: 20px;
+      padding: 24px 24px 20px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, #facc15 0, #f97316 40%, #3b82f6 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; color: #0b1120;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+    .title-main { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+    .title-sub { font-size: 13px; color: var(--text-sub); }
+    .pill {
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-sub);
+      background: radial-gradient(circle at top, rgba(148, 163, 184, 0.12), transparent);
+      white-space: nowrap;
+    }
+    main {
+      display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 800px) {
+      main { grid-template-columns: minmax(0, 1fr); }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+    .section {
+      border-radius: 16px; padding: 16px 16px 14px;
+      background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), rgba(15, 23, 42, 0.96));
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+    .section.secondary {
+      background: radial-gradient(circle at top right, rgba(8, 47, 73, 0.3), rgba(15, 23, 42, 0.96));
+    }
+    label { display: block; font-size: 12px; margin-bottom: 4px; color: #d1d5db; }
+    input[type="file"] {
+      width: 100%; padding: 9px 10px; border-radius: 10px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background-color: rgba(15, 23, 42, 0.9);
+      color: var(--text-sub); font-size: 13px;
+    }
+    input[type="file"]::file-selector-button {
+      padding: 5px 10px; margin-right: 10px; border-radius: 999px; border: 0;
+      background-color: var(--accent); color: white; font-size: 12px; cursor: pointer;
+    }
+    select {
+      width: 100%; padding: 7px 10px; border-radius: 10px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background-color: rgba(15, 23, 42, 0.9); color: var(--text-main); font-size: 13px;
+    }
+    button[type="submit"] {
+      width: 100%; margin-top: 6px; padding: 9px 12px;
+      border-radius: 999px; border: 0;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white; font-weight: 600; font-size: 14px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4),
+                  0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .badge {
+      font-size: 11px; padding: 4px 8px; border-radius: 999px;
+      background-color: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      color: var(--text-sub);
+    }
+    .badge.highlight {
+      border-color: rgba(96, 165, 250, 0.9);
+      background-color: var(--accent-soft);
+      color: #bfdbfe;
+    }
+    .error {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.8);
+      border-radius: 10px;
+      padding: 8px 10px;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .result-box {
+      border-radius: 10px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background-color: rgba(15, 23, 42, 0.9);
+      padding: 10px;
+      font-size: 13px;
+      max-height: 320px;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    footer {
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--text-sub);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+    }
+    .foot-links { display: flex; flex-wrap: wrap; gap: 10px; }
+    .dot {
+      width: 4px; height: 4px; border-radius: 999px;
+      background-color: rgba(148, 163, 184, 0.8);
+      display: inline-block; margin: 0 6px;
+    }
+.lang-switch {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-left: auto;
+}
+
+.lang-switch a {
+  color: var(--text-sub);
+  text-decoration: none;
+}
+
+.lang-switch a:hover {
+  color: var(--text-main);
+}
+
+    .drop-zone {
+      border-radius: 10px;
+      border: 1px dashed rgba(75, 85, 99, 0.9);
+      background-color: rgba(15, 23, 42, 0.5);
+      padding: 14px 12px;
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+      margin-bottom: 8px;
+    }
+    .drop-zone.hover {
+      background-color: rgba(37, 99, 235, 0.12);
+      border-color: rgba(96, 165, 250, 0.9);
+      color: #e5e7eb;
+    }
+    .drop-zone strong {
+      color: #e5e7eb;
+    }
+    .drop-zone small {
+      display: block;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+    .file-input-wrap {
+      margin-top: 6px;
+    }
+
+
+  </style>
+</head>
+
+<!-- GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DV1F597M91"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-DV1F597M91');
+</script>
+
+<body>
+  <div class="shell">
+    <div class="card">
+
+      <header>
+        <div class="brand">
+          <div class="logo">Q</div>
+          <div>
+            <div class="title-main">QuickPDFSum</div>
+            <div class="title-sub">AI-powered PDF Summarizer</div>
+          </div>
+        </div>
+        <div class="pill">BETA · ENGLISH MODE</div>
+<div class="lang-switch">
+  <a href="/?lang=ko">한국어</a> | 
+  <a href="/?lang=en">English</a>
+</div>
+
+      </header>
+
+      <main>
+        <!-- Upload -->
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Upload PDF</div>
+            <div style="font-size:11px;color:var(--text-sub);">Works with papers, reports, books</div>
+          </div>
+
+          <div class="section-desc">
+            Upload a PDF and AI will summarize the content for you.  
+            Your file is deleted automatically after processing.
+          </div>
+
+          <form method="post" enctype="multipart/form-data" id="pdf-form">
+            <div class="input-row">
+              <div>
+                <label for="pdf">PDF File</label>
+
+                <!-- Drag & Drop area -->
+                <div id="drop-zone" class="drop-zone">
+                  <strong>Drag & drop your PDF here</strong>
+                  <small>Or click the button below to choose a file.</small>
+                </div>
+
+                <div class="file-input-wrap">
+                  <input type="file" id="pdf" name="pdf" accept="application/pdf" required />
+                </div>
+              </div>
+
+
+              <div>
+                <label for="level">Summary Length</label>
+                <select id="level" name="level">
+                  <option value="short">Short (3–4 sentences)</option>
+                  <option value="medium" selected>Medium (3–5 bullet points)</option>
+                  <option value="long">Long (about one page)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit">
+              Summarize PDF
+              <span style="font-size:11px;opacity:0.9;">(takes a few seconds)</span>
+            </button>
+
+            {% if error %}
+            <div class="error">
+              {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="badge-row">
+              <div class="badge highlight">Files are not stored</div>
+              <div class="badge">Maximum upload 20MB</div>
+              <div class="badge">Optimized for clarity</div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Result -->
+        <section class="section secondary">
+          <div class="section-header">
+            <div class="section-title">Summary</div>
+            {% if summary %}
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="copy-btn" id="download-btn">Download</button>
+              <button type="button" class="copy-btn" id="copy-btn">Copy</button>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if summary %}
+          <div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;">
+            You may freely edit or copy the summary below.
+          </div>
+
+          <div class="result-box" id="summary-box">{{ summary }}</div>
+
+          {% else %}
+          <div class="section-desc" style="margin-bottom:10px;">
+            The summary result will appear here after uploading a PDF.
+          </div>
+          <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text-sub);line-height:1.6;">
+            <li>Long documents are analyzed in structured chunks.</li>
+            <li>Tables and formulas are explained textually.</li>
+            <li>Please review carefully before using any legal documents.</li>
+          </ul>
+          {% endif %}
+        </section>
+      </main>
+
+      <footer>
+        <div>QuickPDFSum · AI PDF Summarizer</div>
+        <div class="foot-links">
+          <span>Your files are deleted automatically after processing.</span>
+          <span class="dot"></span>
+          <a href="/terms" style="color:inherit;text-decoration:none;font-size:11px;">Terms (KR)</a>
+          <span class="dot"></span>
+          <a href="/privacy" style="color:inherit;text-decoration:none;font-size:11px;">Privacy (KR)</a>
+          <span class="dot"></span>
+          <a href="/terms-en" style="color:inherit;text-decoration:none;font-size:11px;">Terms (EN)</a>
+          <span class="dot"></span>
+          <a href="/privacy-en" style="color:inherit;text-decoration:none;font-size:11px;">Privacy (EN)</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("pdf-form");
+    const submitBtn = form.querySelector('button[type="submit"]');
+    form.addEventListener("submit", () => {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Summarizing...";
+    });
+
+    const copyBtn = document.getElementById("copy-btn");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        const box = document.getElementById("summary-box");
+        if (!box) return;
+        const text = box.innerText || box.textContent || "";
+        try {
+          await navigator.clipboard.writeText(text);
+          const prev = copyBtn.textContent;
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => (copyBtn.textContent = prev), 1500);
+        } catch (e) {
+          alert("Failed to copy. Please copy manually.");
+        }
+      });
+    }
+
+        // ▼ 추가: download button
+    const downloadBtn = document.getElementById("download-btn");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => {
+        const box = document.getElementById("summary-box");
+        if (!box) return;
+        const text = box.innerText || box.textContent || "";
+
+        if (!text.trim()) {
+          alert("There is no summary to download.");
+          return;
+        }
+
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "quickpdfsum-summary.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+
+    
+    // ▼ 여기부터 Drag & Drop
+    (function setupDragAndDrop() {
+      const dropZone = document.getElementById("drop-zone");
+      const fileInput = document.getElementById("pdf");
+      if (!dropZone || !fileInput) return;
+
+      const preventDefaults = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropZone.addEventListener(
+          eventName,
+          () => dropZone.classList.add("hover"),
+          false
+        );
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropZone.addEventListener(
+          eventName,
+          () => dropZone.classList.remove("hover"),
+          false
+        );
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        if (!dt || !dt.files || dt.files.length === 0) return;
+
+        const file = dt.files[0];
+        // PDF만 허용
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+          alert("Only PDF files are allowed.");
+          return;
+        }
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+      });
+
+      // 클릭 시 파일 선택창 열리도록
+      dropZone.addEventListener("click", () => {
+        fileInput.click();
+      });
+    })();
+  </script>
+</body>
+</html>
