@@ -1,6 +1,6 @@
 import os
 import uuid
-from flask import Flask, request, render_template, redirect, url_for, Response
+from flask import Flask, request, render_template, redirect, url_for, Response, jsonify
 from openai import OpenAI
 import fitz  # PyMuPDF
 import pytesseract
@@ -376,14 +376,6 @@ def sitemap():
         ("/terms", "2025-01-01"),
         ("/privacy-en", "2025-01-01"),
         ("/terms-en", "2025-01-01"),
-        ("/pdf-summary", "2025-01-01"),
-        ("/ocr", "2025-01-01"),
-        ("/extract-text", "2025-01-01"),
-        ("/ai-pdf-reader", "2025-01-01"),
-        ("/pdf-summary-kr", "2025-01-01"),
-        ("/ocr-kr", "2025-01-01"),
-        ("/extract-text-kr", "2025-01-01"),
-        ("/ai-pdf-reader-kr", "2025-01-01"),
     ]
 
     domain = "https://quickpdfsum.com"
@@ -405,6 +397,16 @@ def sitemap():
     """
 
     return Response(sitemap_xml, mimetype="application/xml")
+
+
+@app.route("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return jsonify({
+        "status": "healthy",
+        "rate_limit_remaining": RATE_LIMIT_PER_DAY,
+        "version": "1.0.0"
+    })
 
 
 if __name__ == "__main__":
