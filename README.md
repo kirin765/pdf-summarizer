@@ -1,46 +1,24 @@
-# PDF Summarizer
+# PDF Summarizer (Next.js for Vercel)
 
-AI-powered PDF summarization web application using Flask and OpenAI GPT.
+This repository has been migrated to Next.js (App Router) for Vercel deployment.
+The service keeps the same Korean/English behavior and preserves route coverage while
+using serverless API routes for PDF summarization.
 
 ## Features
 
-- **PDF Text Extraction**: Extract text from PDF files using PyMuPDF
-- **OCR Support**: Automatic OCR using Tesseract for scanned PDFs
-- **AI Summarization**: Generate concise summaries using OpenAI GPT-4
-- **Multi-language**: Supports Korean and English
-- **Rate Limiting**: Daily usage limits per IP (20 requests/day)
+- PDF text extraction with `pdf-parse`
+- OpenAI summarization (`gpt-4.1-mini`)
+- Korean/English UI (auto-detected from `Accept-Language`, override with `?lang=ko|en`)
+- In-memory IP/day rate limiting (20 requests/day)
+- Health check endpoint at `/api/health`
+- OCR intentionally disabled in v1 (as requested)
 
 ## Tech Stack
 
-- **Backend**: Flask
-- **AI**: OpenAI GPT-4.1-mini
-- **PDF Processing**: PyMuPDF (fitz)
-- **OCR**: Tesseract
-- **Deployment**: Gunicorn
-
-## Requirements
-
-- Python 3.8+
-- Tesseract OCR installed on system
-- OpenAI API key
-
-## Installation
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd pdf-summarizer
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install additional dependencies (not in requirements.txt)
-pip install pytesseract Pillow pymupdf
-```
+- Frontend/Backend: Next.js 14 (App Router)
+- AI: OpenAI SDK
+- PDF processing: pdf-parse
+- Language: TypeScript
 
 ## Environment Variables
 
@@ -48,26 +26,26 @@ pip install pytesseract Pillow pymupdf
 export OPENAI_API_KEY=your_api_key_here
 ```
 
-## Running the App
+## Running
 
 ```bash
-# Development
-python app.py
-
-# Production with Gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+npm install
+npm run dev
 ```
 
-## Project Structure
+## API
 
-```
-pdf-summarizer/
-├── app.py              # Main Flask application
-├── requirements.txt    # Python dependencies
-├── uploads/            # Temporary PDF upload directory
-└── templates/          # HTML templates
-```
+- `POST /api/summarize`
+  - `multipart/form-data` fields:
+    - `pdf` (required)
+    - `level` (`short | medium | long`)
+    - `lang` (`ko | en`)
+  - max upload size: 20MB
+  - returns: `{ summary, remaining }`
+- `GET /api/health`
 
-## License
+## Notes
 
-MIT
+- Legacy Flask implementation files (`app.py`, templates) remain in the repo for reference.
+- `uploads/` directory is no longer used by the Next.js implementation.
+

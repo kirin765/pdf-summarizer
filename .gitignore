@@ -34,3 +34,7 @@ env/
 # Uploads
 uploads/*
 !uploads/.gitkeep
+
+# Node / Next.js
+node_modules/
+.next/
